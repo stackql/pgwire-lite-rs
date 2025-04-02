@@ -1,0 +1,10 @@
+/target
+stackql
+/.stackql
+stackql*.sh
+stackql*.zip
+stackql*.pkg
+stackql_history.txt
+stackql.log
+.env
+nohup.out
