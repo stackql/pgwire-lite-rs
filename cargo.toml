@@ -5,6 +5,9 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.44", features = ["full"] }
+postgres = { version =  "0.19.10" }
+libpq = "5.0.2"
+libpq-sys = "0.8.0"
 tokio-postgres = "0.7"
 futures = "0.3"
 env_logger = "0.11"
