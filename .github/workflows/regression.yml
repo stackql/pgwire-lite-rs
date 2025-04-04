@@ -80,6 +80,7 @@ jobs:
           python3 cicd/python/build.py --build
 
       - name: Generate rewritten registry for simulations
+        working-directory: stackql-core
         run: |
           python3 test\python\registry-rewrite.py
 
