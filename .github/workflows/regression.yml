@@ -123,7 +123,6 @@ jobs:
         if: success()
         run: |
           robot \
-            --variable "${sundryCfg}" \
             --variable SHOULD_RUN_DOCKER_EXTERNAL_TESTS:true \
             -d test/robot/reports \
             test/robot/functional
