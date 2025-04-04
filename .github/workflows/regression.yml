@@ -79,6 +79,10 @@ jobs:
           go get ./...
           python3 cicd/python/build.py --build
 
+      - name: Generate rewritten registry for simulations
+        run: |
+          python3 test\python\registry-rewrite.py
+
       - name: Parse tag
         id: parse_tag
         run: |
@@ -122,8 +126,12 @@ jobs:
       - name: Run core robot functional tests
         if: success()
         run: |
+          providerRoot="$(realpath $(pwd)/stackql-core/test/registry-mocked)"
+          sundryCfg='SUNDRY_CONFIG:{"registry_path": "'"${providerRoot}"'"}'
           robot \
+            --variable "${sundryCfg}" \
             --variable SHOULD_RUN_DOCKER_EXTERNAL_TESTS:true \
+            --include registry \
             -d test/robot/reports \
             test/robot/functional
       
