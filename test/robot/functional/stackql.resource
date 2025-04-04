@@ -1,5 +1,4 @@
 *** Variables ***
-${LOCAL_LIB_HOME}                      ${CURDIR}/../lib
 ${REPOSITORY_ROOT}                     ${CURDIR}${/}..${/}..${/}..
 ${LOCAL_LIB_HOME}                      ${REPOSITORY_ROOT}${/}stackql-stackql${/}lib
 ${EXECUTION_PLATFORM}                  native   # to be overridden from command line, eg "docker"
