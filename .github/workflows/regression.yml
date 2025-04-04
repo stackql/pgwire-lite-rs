@@ -132,7 +132,6 @@ jobs:
           robot \
             --variable "${sundryCfg}" \
             --variable SHOULD_RUN_DOCKER_EXTERNAL_TESTS:true \
-            --include registry \
             -d test/robot/reports \
             test/robot/functional
       
