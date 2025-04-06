@@ -97,15 +97,16 @@ Rust Testing Client Positive Control Notice Messages from GitHub
     ...    &    ${posixInput}
     ${input} =    Set Variable If    "${IS_WINDOWS}" == "1"    ${windowsInput}    ${posixInput}
     ${shellExe} =    Set Variable If    "${IS_WINDOWS}" == "1"    powershell    sh
+    ${outputErrStrFragment} =    Catenate    SEPARATOR=\n
+    ...    http response status code: 403
     ${result} =    Run Process
     ...    ${shellExe}     \-c    ${input}
     ...    stdout=${CURDIR}/tmp/Rust-Testing-Client-Positive-Control-Notice-Messages-from-GitHub.tmp
     ...    stderr=${CURDIR}/tmp/Rust-Testing-Client-Positive-Control-Notice-Messages-from-GitHub-stderr.tmp
     Log    STDOUT = "${result.stdout}"
     Log    STDERR = "${result.stderr}"
-    Should Be Equal    ${result.return_code}    0
-    # Should Contain     ${result.stdout}    ${outputStr}   collapse_spaces=True
-    # Should Be Empty    ${result.stderr}
+    Should Be Equal    ${result.rc}    0
+    Should Contain    ${result.stderr}    ${outputErrStrFragment}    collapse_spaces=True
     [Teardown]  Run Keywords    Remove Environment Variable     PGHOST
     ...         AND             Remove Environment Variable     PGPORT
     ...         AND             Remove Environment Variable     PGUSER 
