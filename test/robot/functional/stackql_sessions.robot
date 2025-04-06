@@ -103,7 +103,7 @@ Rust Testing Client Positive Control Notice Messages from GitHub
     ...    stderr=${CURDIR}/tmp/Rust-Testing-Client-Positive-Control-Notice-Messages-from-GitHub-stderr.tmp
     Log    STDOUT = "${result.stdout}"
     Log    STDERR = "${result.stderr}"
-    Should Be Equal    ${result.returncode}    0
+    Should Be Equal    ${result.return_code}    0
     # Should Contain     ${result.stdout}    ${outputStr}   collapse_spaces=True
     # Should Be Empty    ${result.stderr}
     [Teardown]  Run Keywords    Remove Environment Variable     PGHOST
