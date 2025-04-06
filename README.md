@@ -2,6 +2,10 @@
 
 ## Testing
 
+## Robot testing
+
+Per [`.github/workflows/regression.yml`](/.github/workflows/regression.yml).
+
 ### vscode debug
 
 - Config in `launch.json` is dependent on [the `CodeLLDB` extension](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb).
@@ -9,8 +13,9 @@
 
 ### Manual Dream Run
 
+Build with `cargo build --release --bin client_test_harness`.
 
-Output of running, once github reaches rate limit:
+Then, presuming you have an appropriate `stackql` server running, the output of running `target/release/client_test_harness "SELECT repo, count(*) as has_starred FROM github.activity.repo_stargazers WHERE owner = 'stackql' and repo in ('stackql', 'stackql-deploy') and login = 'generalkroll0' GROUP BY repo;" "host=localhost port=5888"`, once github reaches rate limit:
 
 ```log
 Query did some non-notify thing.
