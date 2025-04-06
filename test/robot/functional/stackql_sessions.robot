@@ -97,7 +97,7 @@ Rust Testing Client Positive Control Notice Messages from GitHub
     ...    WHERE owner = 'sillyorg' and repo in ('silly', 'silly-but-more') and login = 'sillylogin'
     ...    GROUP BY repo;
     ${posixInput} =     Catenate
-    ...    "${RUST_TESTING_EXE}" "${inputStr}" "localhost ${PG_SRV_PORT_UNENCRYPTED}"
+    ...    "${RUST_TESTING_EXE}" "${inputStr}" "host=localhost port=${PG_SRV_PORT_UNENCRYPTED}"
     ${windowsInput} =     Catenate
     ...    &    ${posixInput}
     ${input} =    Set Variable If    "${IS_WINDOWS}" == "1"    ${windowsInput}    ${posixInput}
