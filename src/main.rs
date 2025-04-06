@@ -104,8 +104,8 @@ fn pq_query(conn: &libpq::Connection, query: &str, notices: SharedNotices) -> Re
     Ok(())
 }
 
-fn pq_main(query_str: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let conninfo = "host=localhost port=5888";
+fn pq_main(query_str: &str, dsn: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let conninfo = dsn.to_string();
     // let query_str = "\
     //     SELECT repo, count(*) as has_starred \
     //     FROM github.activity.repo_stargazers \
@@ -136,12 +136,13 @@ fn pq_main(query_str: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 fn main() {
     let all_args = env::args().collect::<Vec<String>>();
-    if all_args.len() < 2 {
-        println!("Need to at least supply query argument.");
+    if all_args.len() < 3 {
+        println!("Need to at least supply query argument and dsn.");
         exit(1);
     }
     let query = &all_args[1];
-    if let Err(e) = pq_main(&query) {
+    let dsn = &all_args[2];
+    if let Err(e) = pq_main(&query, &dsn) {
         eprintln!("Error: {}", e);
         exit(1);
     }

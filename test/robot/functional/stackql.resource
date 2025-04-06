@@ -148,6 +148,7 @@ Start StackQL PG Server unencrypted
                         ...  \-\-pgsrv\.address\=0.0.0.0 
                         ...  \-\-pgsrv\.port\=${_SRV_PORT_UNENCRYPTED}
                         ...  \-\-namespaces\=${_NAMESPACES_CFG}
+                        ...  \-\-pgsrv\.debug\.enable\=true
                         ...  \-\-sqlBackend\=${_SQL_BACKEND_CFG}
                         ...  \-\-dbInternal\=${DB_INTERNAL_CFG_LAX}
                         ...  \-\-execution\.concurrency\.limit\=${CONCURRENCY_LIMIT}
@@ -161,7 +162,7 @@ Start StackQL PG Server unencrypted
                         ...  stackqlsrv
                         ...  bash
                         ...  \-c
-                        ...  sleep 2 && stackql srv \-\-execution\.concurrency\.limit\=${CONCURRENCY_LIMIT} \-\-registry\='${REGISTRY_NO_VERIFY_CFG_STR.get_config_str('docker')}' \-\-auth\='${AUTH_CFG_STR}' \-\-namespaces\='${_NAMESPACES_CFG}' \-\-sqlBackend\='${_SQL_BACKEND_CFG}' \-\-dbInternal\='${DB_INTERNAL_CFG_LAX}' \-\-tls\.allowInsecure\=true \-\-pgsrv\.address\=0.0.0.0 \-\-pgsrv\.port\=${PG_SRV_PORT_DOCKER_UNENCRYPTED}
+                        ...  sleep 2 && stackql srv \-\-execution\.concurrency\.limit\=${CONCURRENCY_LIMIT} \-\-registry\='${REGISTRY_NO_VERIFY_CFG_STR.get_config_str('docker')}' \-\-pgsrv\.debug\.enable\=true \-\-auth\='${AUTH_CFG_STR}' \-\-namespaces\='${_NAMESPACES_CFG}' \-\-sqlBackend\='${_SQL_BACKEND_CFG}' \-\-dbInternal\='${DB_INTERNAL_CFG_LAX}' \-\-tls\.allowInsecure\=true \-\-pgsrv\.address\=0.0.0.0 \-\-pgsrv\.port\=${PG_SRV_PORT_DOCKER_UNENCRYPTED}
                         ...  stderr=${CURDIR}/tmp/stdout-stackql-srv-unencrypted-${_SRV_PORT_UNENCRYPTED}.txt
                         ...  stdout=${CURDIR}/tmp/stderr-stackql-srv-unencrypted-${_SRV_PORT_UNENCRYPTED}.txt
     END

@@ -46,8 +46,8 @@ PG Session Debug Behaviour Canonical
     ...         AND             Remove Environment Variable     PGSSLKEY
     ...         AND             Remove Environment Variable     PGSSLROOTCERT
 
-PG Session Debug Off Behaviour Canonical
-    [Documentation]   The unencrypted servers have debug off
+PG Session Debug On Unencryopted Server Behaviour Canonical
+    [Documentation]   The unencrypted servers also have debug on
     Set Environment Variable    PGHOST           ${PSQL_CLIENT_HOST}
     Set Environment Variable    PGPORT           ${PG_SRV_PORT_UNENCRYPTED}
     Set Environment Variable    PGUSER           stackql
@@ -61,6 +61,11 @@ PG Session Debug Off Behaviour Canonical
     ...    repo | has_starred 
     ...    ------+-------------
     ...    (0 rows)
+    ${outputErrStr} =    Catenate    SEPARATOR=\n
+    ...    NOTICE:  a notice level event has occurred
+    ...    DETAIL:  http response status code: 403, response body: "{\\"message\\":\\"API rate limit exceeded for 111.1111.111.11. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.) If you reach out to GitHub Support for help, please include the request ID AAAA:AAAA:BBBBBB:BBBBBB:BBBBBBBB and timestamp 2025-01-01 01:00:00 UTC.\\",\\"documentation_url\\":\\"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api\\",\\"status\\":\\"403\\"}"
+    ...    
+    ...    http response status code: 403, response body: "{\\"message\\":\\"API rate limit exceeded for 111.1111.111.11. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.) If you reach out to GitHub Support for help, please include the request ID AAAA:AAAA:BBBBBB:BBBBBB:BBBBBBBB and timestamp 2025-01-01 01:00:00 UTC.\\",\\"documentation_url\\":\\"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api\\",\\"status\\":\\"403\\"}" 
     ${posixInput} =     Catenate
     ...    "${PSQL_EXE}" -c "${inputStr}"
     ${windowsInput} =     Catenate
@@ -69,19 +74,19 @@ PG Session Debug Off Behaviour Canonical
     ${shellExe} =    Set Variable If    "${IS_WINDOWS}" == "1"    powershell    sh
     ${result} =    Run Process
     ...    ${shellExe}     \-c    ${input}
-    ...    stdout=${CURDIR}/tmp/PG-Session-Debug-Off-Behaviour-Canonical.tmp
-    ...    stderr=${CURDIR}/tmp/PG-Session-Debug-Off-Behaviour-Canonical-stderr.tmp
+    ...    stdout=${CURDIR}/tmp/PG-Session-Debug-On-Unencrypted-Server-Behaviour-Canonical.tmp
+    ...    stderr=${CURDIR}/tmp/PG-Session-Debug-On-Unencrypted-Server-Behaviour-Canonical-stderr.tmp
     Log    STDOUT = "${result.stdout}"
     Log    STDERR = "${result.stderr}"
     # Should Contain     ${result.stdout}    ${outputStr}   collapse_spaces=True
-    Should Be Empty    ${result.stderr}
+    Should Contain    ${result.stderr}    ${outputErrStr}    collapse_spaces=True
     [Teardown]  Run Keywords    Remove Environment Variable     PGHOST
     ...         AND             Remove Environment Variable     PGPORT
     ...         AND             Remove Environment Variable     PGUSER 
     ...         AND             Remove Environment Variable     PGPASSWORD
 
 Rust Testing Client Positive Control Notice Messages from GitHub
-    [Documentation]   The unencrypted servers have debug off
+    [Documentation]   The unencrypted servers also have debug on
     Set Environment Variable    PGHOST           ${PSQL_CLIENT_HOST}
     Set Environment Variable    PGPORT           ${PG_SRV_PORT_UNENCRYPTED}
     Set Environment Variable    PGUSER           stackql
@@ -92,7 +97,7 @@ Rust Testing Client Positive Control Notice Messages from GitHub
     ...    WHERE owner = 'sillyorg' and repo in ('silly', 'silly-but-more') and login = 'sillylogin'
     ...    GROUP BY repo;
     ${posixInput} =     Catenate
-    ...    "${RUST_TESTING_EXE}" "${inputStr}"
+    ...    "${RUST_TESTING_EXE}" "${inputStr}" "localhost ${PG_SRV_PORT_UNENCRYPTED}"
     ${windowsInput} =     Catenate
     ...    &    ${posixInput}
     ${input} =    Set Variable If    "${IS_WINDOWS}" == "1"    ${windowsInput}    ${posixInput}
