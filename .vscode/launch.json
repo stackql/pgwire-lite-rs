@@ -8,7 +8,8 @@
             "args": ["build", "--manifest-path", "${workspaceFolder}/Cargo.toml"]
         },
         "args": [
-            "${input:queryStr}"
+            "${input:queryStr}",
+            "${input:dsnStr}"
         ],
         "cwd": "${workspaceFolder}"
       }
@@ -20,6 +21,15 @@
         "description": "Enter the name of the Rust executable",
         "options": [
             "SELECT repo, count(*) as has_starred FROM github.activity.repo_stargazers WHERE owner = 'stackql' and repo in ('stackql', 'stackql-deploy') and login = 'generalkroll0' GROUP BY repo;"
+        ]
+      },
+
+      {
+        "type": "pickString",
+        "id": "dsnStr",
+        "description": "Enter the name of the Rust executable",
+        "options": [
+            "host=localhost port=5444"
         ]
       }
     ]
