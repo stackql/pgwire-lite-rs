@@ -98,16 +98,6 @@ jobs:
         run: |
           python3 test/python/registry-rewrite.py
 
-      - name: Parse tag
-        id: parse_tag
-        run: |
-          tag_obj="$(python3 stackql-core/cicd/python/tag_parse.py '${{ github.ref_name }}' --parse-registry-tag)"
-          echo "tag_obj: $tag_obj"
-          {
-            echo "PARSED_TAG_IS_ROBOT=$(echo $tag_obj | jq -r '.is_robot')"
-            echo "PARSED_TAG_IS_REGRESSION=$(echo $tag_obj | jq -r '.is_regression')"
-          } | tee -a "$GITHUB_ENV"
-
 
       - name: Prepare load balancing materials
         working-directory: stackql-core
