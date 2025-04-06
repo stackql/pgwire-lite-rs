@@ -1,7 +1,7 @@
 *** Variables ***
 ${REPOSITORY_ROOT}                     ${CURDIR}${/}..${/}..${/}..
 ${LOCAL_LIB_HOME}                      ${REPOSITORY_ROOT}${/}stackql-core${/}test${/}robot${/}lib
-${RUST_TESTING_EXE}                    ${REPOSITORY_ROOT}${/}target{/}${/}release${/}client_test_harness
+${RUST_TESTING_EXE}                    ${REPOSITORY_ROOT}${/}target{/}release${/}client_test_harness
 ${EXECUTION_PLATFORM}                  native   # to be overridden from command line, eg "docker"
 ${SQL_BACKEND}                         sqlite_embedded   # to be overridden from command line, eg "postgres_tcp"
 ${IS_WSL}                              false   # to be overridden from command line, with string "true"
