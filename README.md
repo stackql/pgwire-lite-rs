@@ -2,6 +2,11 @@
 
 ## Testing
 
+### vscode debug
+
+- Config in `launch.json` is dependent on [the `CodeLLDB` extension](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb).
+- Also installed [the `rust-analyzer` extension](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+
 ### Manual Dream Run
 
 

@@ -4,9 +4,13 @@ use postgres::SimpleQueryMessage::{Row, CommandComplete};
 use libpq;
 use libpq_sys;
 
+use std::env;
+
+
 use std::collections::HashMap;
 use std::ffi::{CStr, c_void};
 use std::os::raw::c_char;
+use std::process::exit;
 use std::sync::{Arc, Mutex};
 
 use libpq_sys::{
@@ -17,6 +21,8 @@ use libpq_sys::{
     PG_DIAG_CONTEXT, PG_DIAG_SOURCE_FILE,
     PG_DIAG_SOURCE_LINE, PG_DIAG_SOURCE_FUNCTION,
 };
+
+
 
 #[derive(Debug)]
 pub struct Notice {
@@ -98,15 +104,15 @@ fn pq_query(conn: &libpq::Connection, query: &str, notices: SharedNotices) -> Re
     Ok(())
 }
 
-fn pq_main() -> Result<(), Box<dyn std::error::Error>> {
+fn pq_main(query_str: &str) -> Result<(), Box<dyn std::error::Error>> {
     let conninfo = "host=localhost port=5888";
-    let query_str = "\
-        SELECT repo, count(*) as has_starred \
-        FROM github.activity.repo_stargazers \
-        WHERE owner = 'stackql' and repo in ('stackql', 'stackql-deploy') \
-        and login = 'generalkroll0' \
-        GROUP BY repo;\
-    ";
+    // let query_str = "\
+    //     SELECT repo, count(*) as has_starred \
+    //     FROM github.activity.repo_stargazers \
+    //     WHERE owner = 'stackql' and repo in ('stackql', 'stackql-deploy') \
+    //     and login = 'generalkroll0' \
+    //     GROUP BY repo;\
+    // ";
 
     // Create shared notice storage
     let notices: SharedNotices = Arc::new(Mutex::new(Vec::new()));
@@ -129,7 +135,16 @@ fn pq_main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn main() {
-    if let Err(e) = pq_main() {
-        eprintln!("Error: {}", e);
+    let all_args = env::args().collect::<Vec<String>>();
+    if all_args.len() < 2 {
+        println!("Need to at least supply query argument.");
+        exit(1);
     }
+    let query = &all_args[1];
+    if let Err(e) = pq_main(&query) {
+        eprintln!("Error: {}", e);
+        exit(1);
+    }
+    println!("Query executed successfully.");
+    exit(0);
 }

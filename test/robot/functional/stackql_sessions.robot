@@ -79,3 +79,34 @@ PG Session Debug Off Behaviour Canonical
     ...         AND             Remove Environment Variable     PGPORT
     ...         AND             Remove Environment Variable     PGUSER 
     ...         AND             Remove Environment Variable     PGPASSWORD
+
+Rust Testing Client Positive Control Notice Messages from GitHub
+    [Documentation]   The unencrypted servers have debug off
+    Set Environment Variable    PGHOST           ${PSQL_CLIENT_HOST}
+    Set Environment Variable    PGPORT           ${PG_SRV_PORT_UNENCRYPTED}
+    Set Environment Variable    PGUSER           stackql
+    Set Environment Variable    PGPASSWORD       ${PSQL_PASSWORD} 
+    ${inputStr} =    Catenate
+    ...    SELECT repo, count(1) as has_starred
+    ...    FROM github.activity.repo_stargazers    
+    ...    WHERE owner = 'sillyorg' and repo in ('silly', 'silly-but-more') and login = 'sillylogin'
+    ...    GROUP BY repo;
+    ${posixInput} =     Catenate
+    ...    "${RUST_TESTING_EXE}" "${inputStr}"
+    ${windowsInput} =     Catenate
+    ...    &    ${posixInput}
+    ${input} =    Set Variable If    "${IS_WINDOWS}" == "1"    ${windowsInput}    ${posixInput}
+    ${shellExe} =    Set Variable If    "${IS_WINDOWS}" == "1"    powershell    sh
+    ${result} =    Run Process
+    ...    ${shellExe}     \-c    ${input}
+    ...    stdout=${CURDIR}/tmp/Rust-Testing-Client-Positive-Control-Notice-Messages-from-GitHub.tmp
+    ...    stderr=${CURDIR}/tmp/Rust-Testing-Client-Positive-Control-Notice-Messages-from-GitHub-stderr.tmp
+    Log    STDOUT = "${result.stdout}"
+    Log    STDERR = "${result.stderr}"
+    Should Be Equal    ${result.returncode}    0
+    # Should Contain     ${result.stdout}    ${outputStr}   collapse_spaces=True
+    # Should Be Empty    ${result.stderr}
+    [Teardown]  Run Keywords    Remove Environment Variable     PGHOST
+    ...         AND             Remove Environment Variable     PGPORT
+    ...         AND             Remove Environment Variable     PGUSER 
+    ...         AND             Remove Environment Variable     PGPASSWORD
