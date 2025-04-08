@@ -1,14 +1,26 @@
 [package]
-name = "client_test_harness"
+name = "pgwire-lite"
 version = "0.1.0"
 edition = "2021"
+description = "A library for connecting to a StackQL server using the PostgreSQL wire protocol"
+license = "MIT"
+authors = ["krimmer@stackql.io","javen@stackql.io"]
+repository = "https://github.com/stackql/pgwire-lite-rs"
+readme = "README.md"
+keywords = ["stackql", "postgres", "pgwire", "database", "sql"]
+categories = ["database", "api-bindings"]
 
 [dependencies]
-tokio = { version = "1.44", features = ["full"] }
-postgres = { version =  "0.19.10" }
-libpq = "5.0.2"
+libpq = "4.1.0"
 libpq-sys = "0.8.0"
-tokio-postgres = "0.7"
-futures = "0.3"
-env_logger = "0.11"
-log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rand = "0.8.5"
+
+[dev-dependencies]
+lazy_static = "1.4.0"
+colorize = "0.1.0"
+
+[[example]]
+name = "simple_query"
+path = "examples/simple_query.rs"
