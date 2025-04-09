@@ -1,18 +1,20 @@
+// src/notices.rs
+
 use std::collections::HashMap;
 use std::ffi::{c_void, CStr};
 use std::sync::{Arc, Mutex};
 
 use libpq_sys::{
-    PGVerbosity, PGresult, PQresultErrorField, 
-    PG_DIAG_MESSAGE_DETAIL, PG_DIAG_MESSAGE_HINT,
-    PG_DIAG_MESSAGE_PRIMARY, PG_DIAG_SEVERITY, PG_DIAG_SEVERITY_NONLOCALIZED,
-    PG_DIAG_SOURCE_FILE, PG_DIAG_SOURCE_FUNCTION, PG_DIAG_SOURCE_LINE, 
-    PG_DIAG_SQLSTATE, PG_DIAG_STATEMENT_POSITION, PG_DIAG_INTERNAL_POSITION,
-    PG_DIAG_INTERNAL_QUERY, PG_DIAG_CONTEXT, PG_DIAG_SCHEMA_NAME,
-    PG_DIAG_TABLE_NAME, PG_DIAG_COLUMN_NAME, PG_DIAG_DATATYPE_NAME,
-    PG_DIAG_CONSTRAINT_NAME,
+    PGVerbosity, PGresult, PQresultErrorField, PG_DIAG_COLUMN_NAME, PG_DIAG_CONSTRAINT_NAME,
+    PG_DIAG_CONTEXT, PG_DIAG_DATATYPE_NAME, PG_DIAG_INTERNAL_POSITION, PG_DIAG_INTERNAL_QUERY,
+    PG_DIAG_MESSAGE_DETAIL, PG_DIAG_MESSAGE_HINT, PG_DIAG_MESSAGE_PRIMARY, PG_DIAG_SCHEMA_NAME,
+    PG_DIAG_SEVERITY, PG_DIAG_SEVERITY_NONLOCALIZED, PG_DIAG_SOURCE_FILE, PG_DIAG_SOURCE_FUNCTION,
+    PG_DIAG_SOURCE_LINE, PG_DIAG_SQLSTATE, PG_DIAG_STATEMENT_POSITION, PG_DIAG_TABLE_NAME,
 };
 
+/// Error/notice verbosity level for PostgreSQL connections.
+///
+/// Controls the amount of detail included in error and notice messages.
 #[derive(Debug, Clone, Copy)]
 pub enum Verbosity {
     Terse,
@@ -32,13 +34,35 @@ impl From<Verbosity> for PGVerbosity {
     }
 }
 
+/// Represents a notice or warning message from PostgreSQL.
+///
+/// Notices are informational messages that don't cause a query to fail
+/// but provide important context about the execution.
 #[derive(Debug, Clone)]
 pub struct Notice {
+    /// A map of field identifiers to their values
+    ///
+    /// Common fields include:
+    /// - "severity": The severity level (e.g., "NOTICE", "WARNING")
+    /// - "message": The primary message text
+    /// - "detail": Additional detail about the problem
+    /// - "hint": Suggestion on how to fix the problem    
     pub fields: HashMap<&'static str, String>,
 }
 
+/// Thread-safe storage for collected notices
 pub type NoticeStorage = Arc<Mutex<Vec<Notice>>>;
 
+/// C callback function that receives notices from PostgreSQL.
+///
+/// This function is called by libpq whenever a notice is generated.
+/// It extracts the relevant fields based on the verbosity level and
+/// stores them in the shared notice storage.
+///
+/// # Safety
+///
+/// This function is called directly by C code and must follow C calling conventions.
+/// It carefully handles null pointers and performs proper memory management.
 pub extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
     if result.is_null() || arg.is_null() {
         return;
@@ -70,7 +94,10 @@ pub extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
         ],
         Verbosity::Verbose => vec![
             (PG_DIAG_SEVERITY as i32, "severity"),
-            (PG_DIAG_SEVERITY_NONLOCALIZED as i32, "severity_nonlocalized"),
+            (
+                PG_DIAG_SEVERITY_NONLOCALIZED as i32,
+                "severity_nonlocalized",
+            ),
             (PG_DIAG_SQLSTATE as i32, "sqlstate"),
             (PG_DIAG_MESSAGE_PRIMARY as i32, "message"),
             (PG_DIAG_MESSAGE_DETAIL as i32, "detail"),
@@ -87,7 +114,7 @@ pub extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
             (PG_DIAG_SOURCE_FILE as i32, "source_file"),
             (PG_DIAG_SOURCE_LINE as i32, "source_line"),
             (PG_DIAG_SOURCE_FUNCTION as i32, "source_function"),
-        ],        
+        ],
         Verbosity::Sqlstate => vec![
             (PG_DIAG_SEVERITY as i32, "severity"),
             (PG_DIAG_SQLSTATE as i32, "sqlstate"),

@@ -6,6 +6,7 @@ stackql*.zip
 stackql*.pkg
 stackql_history.txt
 stackql.log
+stackql_server.log
 stackql-core/
 stackql-any-sdk/
 stackql-stackql-provider-registry/

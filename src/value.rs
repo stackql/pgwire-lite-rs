@@ -1,6 +1,11 @@
+// src/value.rs
+
 use std::fmt;
 
-/// Value represents a PostgreSQL value from a query result.
+/// Represents a value from a PostgreSQL query result.
+///
+/// This enum provides type-safe access to various PostgreSQL data types
+/// and includes conversion methods for common Rust types.
 #[derive(Debug, Clone)]
 pub enum Value {
     Null,
@@ -76,7 +81,21 @@ impl From<Vec<u8>> for Value {
 
 // Try-conversion traits for getting values out
 impl Value {
-    /// Try to get a string value
+    /// Try to get the value as a string reference.
+    ///
+    /// Returns `None` if the value is not a String.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pgwire_lite::Value;
+    ///
+    /// let val = Value::from("hello");
+    /// assert_eq!(val.as_str(), Some("hello"));
+    ///
+    /// let val = Value::Integer(42);
+    /// assert_eq!(val.as_str(), None);
+    /// ```
     pub fn as_str(&self) -> Option<&str> {
         match self {
             Value::String(s) => Some(s),
@@ -84,7 +103,29 @@ impl Value {
         }
     }
 
-    /// Try to get a bool value
+    /// Try to get the value as a boolean.
+    ///
+    /// Returns `Some(bool)` if the value is a boolean or a string that can be
+    /// interpreted as a boolean (e.g., "true", "yes", "1").
+    /// Returns `None` for other types or strings that cannot be parsed as booleans.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pgwire_lite::Value;
+    ///
+    /// let val = Value::Bool(true);
+    /// assert_eq!(val.as_bool(), Some(true));
+    ///
+    /// let val = Value::from("yes");
+    /// assert_eq!(val.as_bool(), Some(true));
+    ///
+    /// let val = Value::from("0");
+    /// assert_eq!(val.as_bool(), Some(false));
+    ///
+    /// let val = Value::from("invalid");
+    /// assert_eq!(val.as_bool(), None);
+    /// ```
     pub fn as_bool(&self) -> Option<bool> {
         match self {
             Value::Bool(b) => Some(*b),
@@ -97,7 +138,29 @@ impl Value {
         }
     }
 
-    /// Try to get an integer value
+    /// Try to get the value as a 64-bit signed integer.
+    ///
+    /// Returns `Some(i64)` if the value is an integer, a float that can be
+    /// converted to an integer, or a string that can be parsed as an integer.
+    /// Returns `None` for other types or values that cannot be converted.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pgwire_lite::Value;
+    ///
+    /// let val = Value::Integer(42);
+    /// assert_eq!(val.as_i64(), Some(42));
+    ///
+    /// let val = Value::Float(42.0);
+    /// assert_eq!(val.as_i64(), Some(42));
+    ///
+    /// let val = Value::from("42");
+    /// assert_eq!(val.as_i64(), Some(42));
+    ///
+    /// let val = Value::from("invalid");
+    /// assert_eq!(val.as_i64(), None);
+    /// ```
     pub fn as_i64(&self) -> Option<i64> {
         match self {
             Value::Integer(i) => Some(*i),
@@ -107,7 +170,29 @@ impl Value {
         }
     }
 
-    /// Try to get a float value
+    /// Try to get the value as a 64-bit floating point number.
+    ///
+    /// Returns `Some(f64)` if the value is a float, an integer, or a string
+    /// that can be parsed as a float.
+    /// Returns `None` for other types or values that cannot be converted.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pgwire_lite::Value;
+    ///
+    /// let val = Value::Float(3.14);
+    /// assert_eq!(val.as_f64(), Some(3.14));
+    ///
+    /// let val = Value::Integer(42);
+    /// assert_eq!(val.as_f64(), Some(42.0));
+    ///
+    /// let val = Value::from("3.14");
+    /// assert_eq!(val.as_f64(), Some(3.14));
+    ///
+    /// let val = Value::from("invalid");
+    /// assert_eq!(val.as_f64(), None);
+    /// ```
     pub fn as_f64(&self) -> Option<f64> {
         match self {
             Value::Float(f) => Some(*f),
@@ -117,7 +202,19 @@ impl Value {
         }
     }
 
-    /// Check if value is null
+    /// Check if the value is NULL.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pgwire_lite::Value;
+    ///
+    /// let val = Value::Null;
+    /// assert!(val.is_null());
+    ///
+    /// let val = Value::Integer(42);
+    /// assert!(!val.is_null());
+    /// ```
     pub fn is_null(&self) -> bool {
         matches!(self, Value::Null)
     }

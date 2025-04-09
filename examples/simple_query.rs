@@ -1,3 +1,5 @@
+// example/simple_query.rs
+
 use colorize::AnsiColor;
 use pgwire_lite::{PgwireLite, Value};
 
@@ -28,15 +30,17 @@ fn print_row(row: &std::collections::HashMap<String, Value>, index: usize) {
 fn execute_query(conn: &PgwireLite, query: &str) {
     match conn.query(query) {
         Ok(result) => {
-            
             println!();
-            
+
             println!("Elapsed time: {} ms", result.elapsed_time_ms);
 
             println!("Result status: {:?}", result.status);
 
-            println!("{} columns, {} rows, {} notices", result.col_count, result.row_count, result.notice_count);
-            
+            println!(
+                "{} columns, {} rows, {} notices",
+                result.col_count, result.row_count, result.notice_count
+            );
+
             if !result.column_names.is_empty() {
                 println!("Column names: {:?}", result.column_names);
             }
@@ -47,7 +51,7 @@ fn execute_query(conn: &PgwireLite, query: &str) {
                     print_row(row, i);
                 }
             }
-            
+
             if !result.notices.is_empty() {
                 println!("Notices (detail):");
                 for notice in result.notices.iter() {
@@ -57,15 +61,12 @@ fn execute_query(conn: &PgwireLite, query: &str) {
                 }
             }
             println!();
-
-    },
+        }
         Err(e) => eprintln!("Error: {}", e),
     }
 }
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     env_logger::init();
 
     // Create a connection configuration
@@ -114,7 +115,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // stackql provider select, multiple rows
     //
     print_heading("StackQL SELECT example (multiple rows)");
-    execute_query(&conn, "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'");
+    execute_query(
+        &conn,
+        "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'",
+    );
 
     //
     // Still using the same connection
@@ -127,7 +131,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // another stackql provider select, multiple rows
     //
     print_heading("StackQL SELECT example (multiple rows)");
-    execute_query(&conn, "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'");
+    execute_query(
+        &conn,
+        "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'",
+    );
 
     Ok(())
 }
