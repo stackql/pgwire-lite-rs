@@ -11,3 +11,4 @@ stackql-any-sdk/
 stackql-stackql-provider-registry/
 .env
 nohup.out
+ssl-test/
