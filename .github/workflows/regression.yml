@@ -1,20 +1,23 @@
 name: Integration Testing and Analysis
 
+# on:
+#   pull_request:
+#     branches:
+#       - main
+#       - develop
+#       - version*
+#   push:
+#     branches:
+#       - main
+#       - develop
+#       - version*
+#     tags:
+#       - robot*
+#       - regression*
+#       - integration*
+
 on:
-  pull_request:
-    branches:
-      - main
-      - develop
-      - version*
-  push:
-    branches:
-      - main
-      - develop
-      - version*
-    tags:
-      - robot*
-      - regression*
-      - integration*
+  workflow_dispatch: # Only manually triggered now
 
 env:
   GO_VERSION: '^1.22'
