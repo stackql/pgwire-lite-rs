@@ -3,9 +3,14 @@ use std::ffi::{c_void, CStr};
 use std::sync::{Arc, Mutex};
 
 use libpq_sys::{
-    PGVerbosity, PGresult, PQresultErrorField, PG_DIAG_MESSAGE_DETAIL, PG_DIAG_MESSAGE_HINT,
-    PG_DIAG_MESSAGE_PRIMARY, PG_DIAG_SEVERITY, PG_DIAG_SOURCE_FILE, PG_DIAG_SOURCE_FUNCTION,
-    PG_DIAG_SOURCE_LINE, PG_DIAG_SQLSTATE,
+    PGVerbosity, PGresult, PQresultErrorField, 
+    PG_DIAG_MESSAGE_DETAIL, PG_DIAG_MESSAGE_HINT,
+    PG_DIAG_MESSAGE_PRIMARY, PG_DIAG_SEVERITY, PG_DIAG_SEVERITY_NONLOCALIZED,
+    PG_DIAG_SOURCE_FILE, PG_DIAG_SOURCE_FUNCTION, PG_DIAG_SOURCE_LINE, 
+    PG_DIAG_SQLSTATE, PG_DIAG_STATEMENT_POSITION, PG_DIAG_INTERNAL_POSITION,
+    PG_DIAG_INTERNAL_QUERY, PG_DIAG_CONTEXT, PG_DIAG_SCHEMA_NAME,
+    PG_DIAG_TABLE_NAME, PG_DIAG_COLUMN_NAME, PG_DIAG_DATATYPE_NAME,
+    PG_DIAG_CONSTRAINT_NAME,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -65,14 +70,24 @@ pub extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
         ],
         Verbosity::Verbose => vec![
             (PG_DIAG_SEVERITY as i32, "severity"),
+            (PG_DIAG_SEVERITY_NONLOCALIZED as i32, "severity_nonlocalized"),
             (PG_DIAG_SQLSTATE as i32, "sqlstate"),
             (PG_DIAG_MESSAGE_PRIMARY as i32, "message"),
             (PG_DIAG_MESSAGE_DETAIL as i32, "detail"),
             (PG_DIAG_MESSAGE_HINT as i32, "hint"),
+            (PG_DIAG_STATEMENT_POSITION as i32, "statement_position"),
+            (PG_DIAG_INTERNAL_POSITION as i32, "internal_position"),
+            (PG_DIAG_INTERNAL_QUERY as i32, "internal_query"),
+            (PG_DIAG_CONTEXT as i32, "context"),
+            (PG_DIAG_SCHEMA_NAME as i32, "schema_name"),
+            (PG_DIAG_TABLE_NAME as i32, "table_name"),
+            (PG_DIAG_COLUMN_NAME as i32, "column_name"),
+            (PG_DIAG_DATATYPE_NAME as i32, "datatype_name"),
+            (PG_DIAG_CONSTRAINT_NAME as i32, "constraint_name"),
             (PG_DIAG_SOURCE_FILE as i32, "source_file"),
             (PG_DIAG_SOURCE_LINE as i32, "source_line"),
             (PG_DIAG_SOURCE_FUNCTION as i32, "source_function"),
-        ],
+        ],        
         Verbosity::Sqlstate => vec![
             (PG_DIAG_SEVERITY as i32, "severity"),
             (PG_DIAG_SQLSTATE as i32, "sqlstate"),

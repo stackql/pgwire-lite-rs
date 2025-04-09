@@ -1,5 +1,5 @@
 use colorize::AnsiColor;
-use pgwire_lite::{PgwireLite, Value, Verbosity};
+use pgwire_lite::{PgwireLite, Value};
 
 fn print_heading(title: &str) {
     let title_owned = title.to_string(); // Convert &str to String
@@ -25,7 +25,49 @@ fn print_row(row: &std::collections::HashMap<String, Value>, index: usize) {
     println!("}}");
 }
 
+fn execute_query(conn: &PgwireLite, query: &str) {
+    match conn.query(query) {
+        Ok(result) => {
+            
+            println!();
+            
+            println!("Elapsed time: {} ms", result.elapsed_time_ms);
+
+            println!("Result status: {:?}", result.status);
+
+            println!("{} columns, {} rows, {} notices", result.col_count, result.row_count, result.notice_count);
+            
+            if !result.column_names.is_empty() {
+                println!("Column names: {:?}", result.column_names);
+            }
+
+            if !result.rows.is_empty() {
+                println!("Data:");
+                for (i, row) in result.rows.iter().enumerate() {
+                    print_row(row, i);
+                }
+            }
+            
+            if !result.notices.is_empty() {
+                println!("Notices (detail):");
+                for notice in result.notices.iter() {
+                    if let Some(detail) = notice.fields.get("detail") {
+                        println!("{}", detail);
+                    }
+                }
+            }
+            println!();
+
+    },
+        Err(e) => eprintln!("Error: {}", e),
+    }
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    env_logger::init();
+
     // Create a connection configuration
     let conn = PgwireLite::new("localhost", 5444, false, "verbose")?;
 
@@ -38,137 +80,54 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // registry list example
     //
     print_heading("REGISTRY LIST example");
-    match conn.query("REGISTRY LIST aws") {
-        Ok(result) => {
-            println!(
-                "Found {} rows with notices: {}",
-                result.rows.len(),
-                result.notices.len()
-            );
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-    }
-    println!();
+    execute_query(&conn, "REGISTRY LIST aws");
 
     //
     // registry pull example
     //
     print_heading("REGISTRY PULL example");
-    match conn.query("REGISTRY PULL homebrew") {
-        Ok(result) => {
-            println!(
-                "Found {} rows with notices: {}",
-                result.rows.len(),
-                result.notices.len()
-            );
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-    }
-    println!();
+    execute_query(&conn, "REGISTRY PULL homebrew");
 
+    //
     // simple select with one row
+    //
     print_heading("Literal SELECT example (one row)");
-    match conn.query("SELECT 1 as col_name") {
-        Ok(result) => {
-            println!(
-                "Found {} rows with notices: {}",
-                result.rows.len(),
-                result.notices.len()
-            );
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-    }
-    println!();
+    execute_query(&conn, "SELECT 1 as col_name");
 
+    //
     // simple select with no rows
+    //
     print_heading("Literal SELECT example (no rows)");
-    match conn.query("SELECT 1 as col_name WHERE 1=0") {
-        Ok(result) => {
-            println!(
-                "Found {} rows with notices: {}",
-                result.rows.len(),
-                result.notices.len()
-            );
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-            if result.rows.is_empty() {
-                println!("No rows returned");
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-    }
-    println!();
+    execute_query(&conn, "SELECT 1 as col_name WHERE 1=0");
 
+    //
     // failed command - handle expected error
+    //
     print_heading("Failed command example");
-    match conn.query("NOTACOMMAND") {
-        Ok(result) => {
-            println!(
-                "Found {} rows with notices: {}",
-                result.rows.len(),
-                result.notices.len()
-            );
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-        }
-        Err(e) => {
-            eprintln!("{}", e);
-            println!("Error handled as expected, continuing...");
-        }
-    }
-    println!();
+    execute_query(&conn, "NOTACOMMAND");
 
     // Use the same connection object for the remaining queries
     // This is the critical test - can we continue using the same connection
     // after a syntax error, just like psql does?
 
+    //
     // stackql provider select, multiple rows
+    //
     print_heading("StackQL SELECT example (multiple rows)");
-    match conn.query("SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'") {
-        Ok(result) => {
-            println!(
-                "Found {} rows with notices: {}",
-                result.rows.len(),
-                result.notices.len()
-            );
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-    }
-    println!();
+    execute_query(&conn, "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'");
 
+    //
     // Still using the same connection
     // stackql provider select, provider error, no rows
+    //
     print_heading("StackQL SELECT example with provider error and no rows");
-    match conn.query("SELECT region, function_name FROM aws.lambda.functions WHERE region = 'us-east-1' AND data__Identifier = 'fred'") {
-        Ok(result) => {
-            println!("Found {} rows with notices: {}", result.rows.len(), result.notices.len());
-            for (i, row) in result.rows.iter().enumerate() {
-                print_row(row, i);
-            }
-            // Print any notices
-            if !result.notices.is_empty() {
-                println!("\nNotices:");
-                for (i, notice) in result.notices.iter().enumerate() {
-                    println!("Notice {}: {:?}", i, notice);
-                }
-            }
-        },
-        Err(e) => eprintln!("Error: {}", e),
-    }
+    execute_query(&conn, "SELECT region, function_name FROM aws.lambda.functions WHERE region = 'us-east-1' AND data__Identifier = 'fred'");
+
+    //
+    // another stackql provider select, multiple rows
+    //
+    print_heading("StackQL SELECT example (multiple rows)");
+    execute_query(&conn, "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'");
 
     Ok(())
 }
