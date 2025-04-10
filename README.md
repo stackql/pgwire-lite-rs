@@ -122,31 +122,95 @@ For more detailed usage examples and API documentation, please visit [docs.rs/pg
 
 This project depends on `libpq` (PostgreSQL client library) which needs to be available at compile time.
 
-### Linux (Ubuntu/Debian)
 ```bash
+# Linux (Ubuntu/Debian)
 sudo apt update
 sudo apt install -y libclang-dev libpq-dev pkg-config
-```
 
-### macOS
-```bash
+# macOS
 brew update
 brew install postgresql libpq
-```
-
-After installing with Homebrew on macOS, you may need to add libpq to your PATH:
-```bash
+# after installing with Homebrew on macOS, you may need to add libpq to your PATH:
 echo 'export PATH="/usr/local/opt/libpq/bin:$PATH"' >> ~/.zshrc
-# Or for Intel Macs with Homebrew in the default location
-# For Apple Silicon Macs, use: echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+# or for Intel Macs with Homebrew in the default location
+# for Apple Silicon Macs, use: echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
 
 # Also set these environment variables for the compiler to find libpq
 export LDFLAGS="-L/usr/local/opt/libpq/lib"
 export CPPFLAGS="-I/usr/local/opt/libpq/include"
 ```
 
+### Building the project
 
+To build locally use:
 
+```bash
+cargo build            	# Debug build
+cargo build --release  	# Release build
+```
+
+### Testing the project
+
+The tests provided can be performed with a [`stackql`](https://github.com/stackql/stackql) server.  
+
+> Download [`stackql`](https://github.com/stackql/stackql) using:
+> ```bash
+> curl -L https://bit.ly/stackql-zip -O && unzip stackql-zip
+> ```
+
+To run the examples and integration tests you will need to set invalid AWS credentials (to test an error condition), use this:
+
+```bash
+export AWS_ACCESS_KEY_ID="DUMMYKEYID"
+export AWS_SECRET_ACCESS_KEY="DUMMYSECRETACCESSKEY"
+```
+
+#### Without TLS
+
+To test the library with a local server *without* tls, run the following:
+
+```bash
+sh start-server.sh
+cargo test --test integration
+sh stop-server.sh
+```
+
+To run the examples:
+
+```bash
+sh start-server.sh
+RUST_LOG=debug cargo run --example simple_query # debug mode
+cargo run --example simple_query
+sh stop-server.sh
+```
+#### Without TLS
+
+To test the library with a local server *with* tls, run the following:
+
+```bash
+sh start-secure-server.sh
+cargo run --example simple_query_with_mtls
+sh stop-server.sh
+```
+
+### Documenting the project
+
+To document the project locally, use:
+
+```bash
+cargo doc                # Generate documentation
+cargo doc --no-deps      # Generate docs excluding dependencies
+```
+
+### Other utilities
+
+Other useful `cargo` utilities include:
+
+```bash
+cargo fmt --all         # Formats all code according to Rust style guidelines
+cargo check             # Compiles without building an executable (pre build check)
+cargo clippy            # Suggests code improvements (linter)
+```
 
 ## License
 

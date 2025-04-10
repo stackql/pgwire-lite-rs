@@ -7,7 +7,9 @@ use std::fmt;
 /// This enum provides type-safe access to various PostgreSQL data types
 /// and includes conversion methods for common Rust types.
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub enum Value {
+    #[default]
     Null,
     Bool(bool),
     Integer(i64),
@@ -30,11 +32,6 @@ impl fmt::Display for Value {
 }
 
 // Default implementation for Value is Null
-impl Default for Value {
-    fn default() -> Self {
-        Value::Null
-    }
-}
 
 // Implement From traits for common types
 impl From<String> for Value {
