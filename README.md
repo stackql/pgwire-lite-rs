@@ -118,6 +118,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 For more detailed usage examples and API documentation, please visit [docs.rs/pgwire-lite](https://docs.rs/pgwire-lite).
 
+## Building Locally
+
+This project depends on `libpq` (PostgreSQL client library) which needs to be available at compile time.
+
+### Linux (Ubuntu/Debian)
+```bash
+sudo apt update
+sudo apt install -y libclang-dev libpq-dev pkg-config
+```
+
+### macOS
+```bash
+brew update
+brew install postgresql libpq
+```
+
+After installing with Homebrew on macOS, you may need to add libpq to your PATH:
+```bash
+echo 'export PATH="/usr/local/opt/libpq/bin:$PATH"' >> ~/.zshrc
+# Or for Intel Macs with Homebrew in the default location
+# For Apple Silicon Macs, use: echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+
+# Also set these environment variables for the compiler to find libpq
+export LDFLAGS="-L/usr/local/opt/libpq/lib"
+export CPPFLAGS="-I/usr/local/opt/libpq/include"
+```
+
+
+
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

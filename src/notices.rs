@@ -63,7 +63,7 @@ pub type NoticeStorage = Arc<Mutex<Vec<Notice>>>;
 ///
 /// This function is called directly by C code and must follow C calling conventions.
 /// It carefully handles null pointers and performs proper memory management.
-pub extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
+pub unsafe extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
     if result.is_null() || arg.is_null() {
         return;
     }
@@ -73,7 +73,8 @@ pub extern "C" fn notice_receiver(arg: *mut c_void, result: *const PGresult) {
     // Retrieve verbosity level from the connection
     let verbosity = match shared_notices.lock() {
         Ok(notices) => notices
-            .get(0)
+            // .get(0)
+            .first()
             .map(|_| Verbosity::Verbose)
             .unwrap_or(Verbosity::Default),
         Err(_) => Verbosity::Default,

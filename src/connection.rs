@@ -282,7 +282,8 @@ impl PgwireLite {
             // Clear any pending results
             Self::consume_pending_results(&conn);
 
-            return Err(format!("{}", error_msg.trim_end()).into());
+            // return Err(format!("{}", error_msg.trim_end()).into());
+            return Err(error_msg.trim_end().to_string().into());
         }
 
         // Get column information
