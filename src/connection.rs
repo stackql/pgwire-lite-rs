@@ -209,7 +209,7 @@ impl PgwireLite {
             "host={} port={} sslmode={} application_name=pgwire-lite-client connect_timeout=10 client_encoding=UTF8",
             self.hostname,
             self.port,
-            if self.use_tls { "require" } else { "disable" }
+            if self.use_tls { "verify-full" } else { "disable" }
         );
         debug!("Establishing connection using: {}", conn_str);
 
@@ -358,6 +358,8 @@ impl PgwireLite {
         let notice_count = notices.len();
 
         let elapsed_time_ms = start_time.elapsed().as_millis() as u64;
+
+        drop(conn);
 
         Ok(QueryResult {
             rows,

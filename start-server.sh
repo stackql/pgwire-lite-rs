@@ -14,6 +14,6 @@ check_and_stop_server
 
 PGPORT=5444
 echo "starting local stackql server on port $PGPORT"
-nohup ./stackql --pgsrv.address=0.0.0.0 --pgsrv.port=$PGPORT srv &
+nohup ./stackql srv --pgsrv.port=$PGPORT --pgsrv.debug.enable=true --pgsrv.loglevel=DEBUG > stackql_server.log 2>&1 &
 sleep 5
 echo "stackql server started"

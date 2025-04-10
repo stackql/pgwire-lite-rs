@@ -84,10 +84,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     execute_query(&conn, "REGISTRY LIST aws");
 
     //
-    // registry pull example
+    // registry pull examples
     //
-    print_heading("REGISTRY PULL example");
+    print_heading("REGISTRY PULL examples");
     execute_query(&conn, "REGISTRY PULL homebrew");
+    execute_query(&conn, "REGISTRY PULL github");
 
     //
     // simple select with one row
@@ -107,33 +108,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print_heading("Failed command example");
     execute_query(&conn, "NOTACOMMAND");
 
-    // Use the same connection object for the remaining queries
-    // This is the critical test - can we continue using the same connection
-    // after a syntax error, just like psql does?
-
     //
     // stackql provider select, multiple rows
     //
     print_heading("StackQL SELECT example (multiple rows)");
     execute_query(
         &conn,
-        "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'",
+        "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name IN ('stackql','steampipe')",
     );
 
     //
-    // Still using the same connection
     // stackql provider select, provider error, no rows
     //
     print_heading("StackQL SELECT example with provider error and no rows");
-    execute_query(&conn, "SELECT region, function_name FROM aws.lambda.functions WHERE region = 'us-east-1' AND data__Identifier = 'fred'");
+    execute_query(&conn, "SELECT id, name, description, stargazers_count FROM github.repos.repos WHERE org = 'nonexistent-org'");
 
     //
-    // another stackql provider select, multiple rows
+    // another stackql provider select, should succeed
     //
-    print_heading("StackQL SELECT example (multiple rows)");
+    print_heading("StackQL SELECT example");
     execute_query(
         &conn,
-        "SELECT * FROM homebrew.formula.vw_usage_metrics WHERE formula_name = 'stackql'",
+        "SELECT id, name, description, stargazers_count FROM github.repos.repos WHERE org = 'stackql' AND name = 'stackql'",
     );
 
     Ok(())
