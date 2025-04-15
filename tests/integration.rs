@@ -2,7 +2,7 @@
 
 use colorize::AnsiColor;
 use libpq_sys::ExecStatusType;
-use pgwire_lite::{PgwireLite, Value, QueryResult};
+use pgwire_lite::{PgwireLite, QueryResult, Value};
 
 fn print_heading(title: &str) {
     let title_owned = title.to_string(); // Convert &str to String
@@ -28,9 +28,13 @@ fn print_row(row: &std::collections::HashMap<String, Value>, index: usize) {
     println!("}}");
 }
 
-fn execute_query_with_assertions(conn: &PgwireLite, query: &str, expected_assertions: QueryAssertions) -> bool {
+fn execute_query_with_assertions(
+    conn: &PgwireLite,
+    query: &str,
+    expected_assertions: QueryAssertions,
+) -> bool {
     println!("\nExecuting query: {}", query);
-    
+
     match conn.query(query) {
         Ok(result) => {
             println!();
@@ -61,7 +65,7 @@ fn execute_query_with_assertions(conn: &PgwireLite, query: &str, expected_assert
                 }
             }
             println!();
-            
+
             // Run assertions on the result
             let passed = expected_assertions.assert_result(&result);
             if !passed {
@@ -79,7 +83,10 @@ fn execute_query_with_assertions(conn: &PgwireLite, query: &str, expected_assert
                 if let Some(error_contains) = &expected_assertions.error_contains {
                     let error_str = e.to_string();
                     if !error_str.contains(error_contains) {
-                        println!("❌ Error doesn't contain expected text '{}': {}", error_contains, error_str);
+                        println!(
+                            "❌ Error doesn't contain expected text '{}': {}",
+                            error_contains, error_str
+                        );
                         return false;
                     }
                 }
@@ -102,7 +109,7 @@ struct QueryAssertions {
     expected_column_names: Option<Vec<String>>,
     expected_values: Option<Vec<(String, String)>>, // (column, expected value)
     expected_notice_count: Option<usize>,
-    
+
     // For error cases
     expect_error: bool,
     error_contains: Option<String>,
@@ -111,43 +118,51 @@ struct QueryAssertions {
 impl QueryAssertions {
     fn assert_result(&self, result: &QueryResult) -> bool {
         let mut passed = true;
-        
+
         // Check elapsed time
         if let Some(min_time) = self.min_elapsed_time_ms {
             if result.elapsed_time_ms < min_time {
-                println!("❌ Elapsed time should be at least {} ms, got {} ms", 
-                    min_time, result.elapsed_time_ms);
+                println!(
+                    "❌ Elapsed time should be at least {} ms, got {} ms",
+                    min_time, result.elapsed_time_ms
+                );
                 passed = false;
             }
         }
-        
+
         // Check status
         if let Some(expected_status) = self.expected_status {
             if result.status != expected_status {
-                println!("❌ Expected status {:?}, got {:?}", 
-                    expected_status, result.status);
+                println!(
+                    "❌ Expected status {:?}, got {:?}",
+                    expected_status, result.status
+                );
                 passed = false;
             }
         }
-        
+
         // Check column count
         if let Some(expected_col_count) = self.expected_col_count {
             if result.col_count != expected_col_count {
-                println!("❌ Expected {} columns, got {}", 
-                    expected_col_count, result.col_count);
+                println!(
+                    "❌ Expected {} columns, got {}",
+                    expected_col_count, result.col_count
+                );
                 passed = false;
             }
         }
-        
+
         // Check row count
         if let Some(min_row_count) = self.min_row_count {
             if result.row_count < min_row_count {
-                println!("❌ Expected at least {} rows, got {}", 
-                    min_row_count, result.row_count);
+                println!(
+                    "❌ Expected at least {} rows, got {}",
+                    min_row_count, result.row_count
+                );
                 passed = false;
             }
         }
-        
+
         // Check column names
         if let Some(expected_names) = &self.expected_column_names {
             for name in expected_names {
@@ -157,7 +172,7 @@ impl QueryAssertions {
                 }
             }
         }
-        
+
         // Check expected values
         if let Some(expected_values) = &self.expected_values {
             if result.rows.is_empty() {
@@ -170,11 +185,13 @@ impl QueryAssertions {
                         Some(val) => {
                             let actual = val.to_string();
                             if actual != *expected_value {
-                                println!("❌ For column '{}', expected '{}', got '{}'", 
-                                    col, expected_value, actual);
+                                println!(
+                                    "❌ For column '{}', expected '{}', got '{}'",
+                                    col, expected_value, actual
+                                );
                                 passed = false;
                             }
-                        },
+                        }
                         None => {
                             println!("❌ Column '{}' not found in result", col);
                             passed = false;
@@ -183,16 +200,18 @@ impl QueryAssertions {
                 }
             }
         }
-        
+
         // Check notice count
         if let Some(expected_notice_count) = self.expected_notice_count {
             if result.notice_count != expected_notice_count {
-                println!("❌ Expected {} notices, got {}", 
-                    expected_notice_count, result.notice_count);
+                println!(
+                    "❌ Expected {} notices, got {}",
+                    expected_notice_count, result.notice_count
+                );
                 passed = false;
             }
         }
-        
+
         passed
     }
 }
@@ -235,63 +254,87 @@ fn test_queries() {
     // registry list example
     //
     print_heading("REGISTRY LIST example");
-    all_queries_succeeded &= execute_query_with_assertions(&conn, "REGISTRY LIST aws", QueryAssertions {
-        expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
-        expected_col_count: Some(2),
-        min_row_count: Some(1),
-        expected_column_names: Some(vec!["provider".to_string(), "versions".to_string()]),
-        expected_values: Some(vec![("provider".to_string(), "aws".to_string())]),
-        ..Default::default()
-    });
+    all_queries_succeeded &= execute_query_with_assertions(
+        &conn,
+        "REGISTRY LIST aws",
+        QueryAssertions {
+            expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
+            expected_col_count: Some(2),
+            min_row_count: Some(1),
+            expected_column_names: Some(vec!["provider".to_string(), "versions".to_string()]),
+            expected_values: Some(vec![("provider".to_string(), "aws".to_string())]),
+            ..Default::default()
+        },
+    );
 
     //
     // registry pull examples
     //
     print_heading("REGISTRY PULL examples");
-    all_queries_succeeded &= execute_query_with_assertions(&conn, "REGISTRY PULL homebrew", QueryAssertions {
-        expected_status: Some(ExecStatusType::PGRES_COMMAND_OK),
-        ..Default::default()
-    });
-    
-    all_queries_succeeded &= execute_query_with_assertions(&conn, "REGISTRY PULL github", QueryAssertions {
-        expected_status: Some(ExecStatusType::PGRES_COMMAND_OK),
-        ..Default::default()
-    });
+    all_queries_succeeded &= execute_query_with_assertions(
+        &conn,
+        "REGISTRY PULL homebrew",
+        QueryAssertions {
+            expected_status: Some(ExecStatusType::PGRES_COMMAND_OK),
+            ..Default::default()
+        },
+    );
+
+    all_queries_succeeded &= execute_query_with_assertions(
+        &conn,
+        "REGISTRY PULL github",
+        QueryAssertions {
+            expected_status: Some(ExecStatusType::PGRES_COMMAND_OK),
+            ..Default::default()
+        },
+    );
 
     //
     // simple select with one row
     //
     print_heading("Literal SELECT example (one row)");
-    all_queries_succeeded &= execute_query_with_assertions(&conn, "SELECT 1 as col_name", QueryAssertions {
-        expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
-        expected_col_count: Some(1),
-        min_row_count: Some(1),
-        expected_column_names: Some(vec!["col_name".to_string()]),
-        expected_values: Some(vec![("col_name".to_string(), "1".to_string())]),
-        ..Default::default()
-    });
+    all_queries_succeeded &= execute_query_with_assertions(
+        &conn,
+        "SELECT 1 as col_name",
+        QueryAssertions {
+            expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
+            expected_col_count: Some(1),
+            min_row_count: Some(1),
+            expected_column_names: Some(vec!["col_name".to_string()]),
+            expected_values: Some(vec![("col_name".to_string(), "1".to_string())]),
+            ..Default::default()
+        },
+    );
 
     //
     // simple select with no rows
     //
     print_heading("Literal SELECT example (no rows)");
-    all_queries_succeeded &= execute_query_with_assertions(&conn, "SELECT 1 as col_name WHERE 1=0", QueryAssertions {
-        expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
-        expected_col_count: Some(1),
-        min_row_count: Some(0),
-        expected_column_names: Some(vec!["col_name".to_string()]),
-        ..Default::default()
-    });
+    all_queries_succeeded &= execute_query_with_assertions(
+        &conn,
+        "SELECT 1 as col_name WHERE 1=0",
+        QueryAssertions {
+            expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
+            expected_col_count: Some(1),
+            min_row_count: Some(0),
+            expected_column_names: Some(vec!["col_name".to_string()]),
+            ..Default::default()
+        },
+    );
 
     //
     // failed command - handle expected error
     //
     print_heading("Failed command example");
-    all_queries_succeeded &= execute_query_with_assertions(&conn, "NOTACOMMAND", QueryAssertions {
-        expect_error: true,
-        error_contains: Some("syntax error".to_string()),
-        ..Default::default()
-    });
+    all_queries_succeeded &= execute_query_with_assertions(
+        &conn,
+        "NOTACOMMAND",
+        QueryAssertions {
+            expect_error: true,
+            error_contains: Some("syntax error".to_string()),
+            ..Default::default()
+        },
+    );
 
     //
     // stackql provider select, multiple rows
@@ -318,7 +361,7 @@ fn test_queries() {
     //
     print_heading("StackQL SELECT example with provider error and no rows");
     all_queries_succeeded &= execute_query_with_assertions(
-        &conn, 
+        &conn,
         "SELECT id, name, description, stargazers_count FROM github.repos.repos WHERE org = 'nonexistent-org'",
         QueryAssertions {
             expected_status: Some(ExecStatusType::PGRES_TUPLES_OK),
@@ -358,11 +401,14 @@ fn test_queries() {
             ]),
             expected_values: Some(vec![("full_name".to_string(), "stackql".to_string())]),
             ..Default::default()
-        }
+        },
     );
 
     // Assert that all queries succeeded as expected
-    assert!(all_queries_succeeded, "One or more queries failed unexpectedly");
-    
+    assert!(
+        all_queries_succeeded,
+        "One or more queries failed unexpectedly"
+    );
+
     println!("All tests completed successfully!");
 }

@@ -23,3 +23,8 @@ env_logger = "0.10"
 [[example]]
 name = "simple_query"
 path = "examples/simple_query.rs"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu"]

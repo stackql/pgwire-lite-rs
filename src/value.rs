@@ -6,8 +6,7 @@ use std::fmt;
 ///
 /// This enum provides type-safe access to various PostgreSQL data types
 /// and includes conversion methods for common Rust types.
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub enum Value {
     #[default]
     Null,

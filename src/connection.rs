@@ -218,7 +218,6 @@ impl PgwireLite {
 
         // Connection diagnostics
         unsafe {
-
             let ssl_in_use = libpq_sys::PQsslInUse((&conn).into()) != 0;
             let host_ptr = libpq_sys::PQhost((&conn).into());
             let port_ptr = libpq_sys::PQport((&conn).into());
@@ -227,22 +226,24 @@ impl PgwireLite {
                 let port = CStr::from_ptr(port_ptr).to_string_lossy();
                 debug!("Connected to: {}:{} (ssl: {})", host, port, ssl_in_use);
             }
-            
+
             // PQstatus output
             let status = libpq_sys::PQstatus((&conn).into());
             debug!("Connection status: {:?}", status);
-            
+
             // PQtransactionStatus output
             let tx_status = libpq_sys::PQtransactionStatus((&conn).into());
             debug!("Transaction status: {:?}", tx_status);
-            
+
             // PQserverVersion output
             let server_version = libpq_sys::PQserverVersion((&conn).into());
             let major = server_version / 10000;
             let minor = (server_version / 100) % 100;
             let revision = server_version % 100;
-            debug!("Server version: {}.{}.{} ({})", major, minor, revision, server_version);
-        
+            debug!(
+                "Server version: {}.{}.{} ({})",
+                major, minor, revision, server_version
+            );
         }
 
         // Apply the desired verbosity level

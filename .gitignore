@@ -14,3 +14,4 @@ stackql-stackql-provider-registry/
 nohup.out
 ssl-test/
 stackql-zip
+cargo_login.sh

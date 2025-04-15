@@ -73,9 +73,9 @@ fn setup_tls() {
     // Set up environment variables for TLS
     let home_dir = env::var("HOME").expect("Could not find HOME environment variable");
     let ssl_dir = PathBuf::from(&home_dir).join("ssl-test");
-    
+
     // Configure TLS settings
-    env::set_var("PGSSLMODE", "verify-ca");  // Use verify-ca instead of verify-full to bypass hostname check
+    env::set_var("PGSSLMODE", "verify-ca"); // Use verify-ca instead of verify-full to bypass hostname check
     env::set_var(
         "PGSSLCERT",
         ssl_dir
@@ -94,14 +94,14 @@ fn setup_tls() {
             .to_string_lossy()
             .to_string(),
     );
-    
+
     // Disable hostname verification for testing purposes
     env::set_var("PGSSLSNI", "0");
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
-    
+
     // Setup TLS environment variables
     setup_tls();
 
