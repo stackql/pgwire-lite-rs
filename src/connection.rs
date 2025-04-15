@@ -209,12 +209,42 @@ impl PgwireLite {
             "host={} port={} sslmode={} application_name=pgwire-lite-client connect_timeout=10 client_encoding=UTF8",
             self.hostname,
             self.port,
-            if self.use_tls { "require" } else { "disable" }
+            if self.use_tls { "verify-full" } else { "disable" }
         );
         debug!("Establishing connection using: {}", conn_str);
 
         // Create a fresh connection for this query
         let conn = Connection::new(&conn_str)?;
+
+        // Connection diagnostics
+        unsafe {
+            let ssl_in_use = libpq_sys::PQsslInUse((&conn).into()) != 0;
+            let host_ptr = libpq_sys::PQhost((&conn).into());
+            let port_ptr = libpq_sys::PQport((&conn).into());
+            if !host_ptr.is_null() && !port_ptr.is_null() {
+                let host = CStr::from_ptr(host_ptr).to_string_lossy();
+                let port = CStr::from_ptr(port_ptr).to_string_lossy();
+                debug!("Connected to: {}:{} (ssl: {})", host, port, ssl_in_use);
+            }
+
+            // PQstatus output
+            let status = libpq_sys::PQstatus((&conn).into());
+            debug!("Connection status: {:?}", status);
+
+            // PQtransactionStatus output
+            let tx_status = libpq_sys::PQtransactionStatus((&conn).into());
+            debug!("Transaction status: {:?}", tx_status);
+
+            // PQserverVersion output
+            let server_version = libpq_sys::PQserverVersion((&conn).into());
+            let major = server_version / 10000;
+            let minor = (server_version / 100) % 100;
+            let revision = server_version % 100;
+            debug!(
+                "Server version: {}.{}.{} ({})",
+                major, minor, revision, server_version
+            );
+        }
 
         // Apply the desired verbosity level
         debug!("Setting error verbosity to: {:?}", self.verbosity);
@@ -282,7 +312,8 @@ impl PgwireLite {
             // Clear any pending results
             Self::consume_pending_results(&conn);
 
-            return Err(format!("{}", error_msg.trim_end()).into());
+            // return Err(format!("{}", error_msg.trim_end()).into());
+            return Err(error_msg.trim_end().to_string().into());
         }
 
         // Get column information
@@ -357,6 +388,8 @@ impl PgwireLite {
         let notice_count = notices.len();
 
         let elapsed_time_ms = start_time.elapsed().as_millis() as u64;
+
+        drop(conn);
 
         Ok(QueryResult {
             rows,

@@ -118,9 +118,110 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 For more detailed usage examples and API documentation, please visit [docs.rs/pgwire-lite](https://docs.rs/pgwire-lite).
 
+## Building Locally
+
+This project depends on `libpq` (PostgreSQL client library) which needs to be available at compile time.
+
+```bash
+# Linux (Ubuntu/Debian)
+sudo apt update
+sudo apt install -y libclang-dev libpq-dev pkg-config
+
+# macOS
+brew update
+brew install postgresql libpq
+# after installing with Homebrew on macOS, you may need to add libpq to your PATH:
+echo 'export PATH="/usr/local/opt/libpq/bin:$PATH"' >> ~/.zshrc
+# or for Intel Macs with Homebrew in the default location
+# for Apple Silicon Macs, use: echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+
+# Also set these environment variables for the compiler to find libpq
+export LDFLAGS="-L/usr/local/opt/libpq/lib"
+export CPPFLAGS="-I/usr/local/opt/libpq/include"
+```
+
+### Building the project
+
+To build locally use:
+
+```bash
+cargo build            	# Debug build
+cargo build --release  	# Release build
+```
+
+### Testing the project
+
+The tests provided can be performed with a [`stackql`](https://github.com/stackql/stackql) server.  
+
+> Download [`stackql`](https://github.com/stackql/stackql) using:
+> ```bash
+> curl -L https://bit.ly/stackql-zip -O && unzip stackql-zip
+> ```
+
+#### Without TLS
+
+To test the library with a local server *without* tls, run the following:
+
+```bash
+sh start-server.sh
+cargo test --test integration
+# or with verbose output
+RUST_LOG=debug cargo test --test integration -- --nocapture
+sh stop-server.sh
+```
+
+To run the examples with a local server *without* tls, use the following:
+
+```bash
+sh start-server.sh
+cargo run --example simple_query
+# or with verbose output
+RUST_LOG=debug cargo run --example simple_query
+sh stop-server.sh
+```
+#### With TLS
+
+To test the library with a local server *with* tls, run the following:
+
+```bash
+sh start-secure-server.sh
+cargo test --test integration_mtls
+# or with verbose output
+RUST_LOG=debug cargo test --test integration_mtls -- --nocapture
+sh stop-server.sh
+```
+To run the examples with a local server *with* tls, use the following:
+
+```bash
+sh start-secure-server.sh
+cargo run --example simple_query_with_mtls
+# or with verbose output
+RUST_LOG=debug cargo run --example simple_query_with_mtls
+sh stop-server.sh
+```
+
+### Documenting the project
+
+To document the project locally, use:
+
+```bash
+cargo doc                # Generate documentation
+cargo doc --no-deps      # Generate docs excluding dependencies
+```
+
+### Other utilities
+
+Other useful `cargo` utilities include:
+
+```bash
+cargo fmt --all         # Formats all code according to Rust style guidelines
+cargo check             # Compiles without building an executable (pre build check)
+cargo clippy            # Suggests code improvements (linter)
+```
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 

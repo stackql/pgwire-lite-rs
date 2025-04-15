@@ -20,5 +20,5 @@ export CLIENT_CERT=$(base64 -w 0 ~/ssl-test/client_cert.pem)
 export PGSSLMODE=require
 
 # Start the secure PostgreSQL server using stackql
-nohup ./stackql srv --pgsrv.address=0.0.0.0 --pgsrv.port=$PGPORT --pgsrv.tls='{ "keyFilePath": "'${PGSSLSRVKEY}'", "certFilePath": "'${PGSSLROOTCERT}'", "clientCAs": [ "'${CLIENT_CERT}'" ] }' >/dev/null 2>&1 &
+nohup ./stackql srv --pgsrv.port=$PGPORT --pgsrv.debug.enable=true --pgsrv.loglevel=DEBUG --pgsrv.tls='{ "keyFilePath": "'${PGSSLSRVKEY}'", "certFilePath": "'${PGSSLROOTCERT}'", "clientCAs": [ "'${CLIENT_CERT}'" ] }' > stackql_server.log 2>&1 &
 echo "secure server started on port $PGPORT with TLS"
