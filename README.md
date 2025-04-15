@@ -158,13 +158,6 @@ The tests provided can be performed with a [`stackql`](https://github.com/stackq
 > curl -L https://bit.ly/stackql-zip -O && unzip stackql-zip
 > ```
 
-To run the examples and integration tests you will need to set invalid AWS credentials (to test an error condition), use this:
-
-```bash
-export AWS_ACCESS_KEY_ID="DUMMYKEYID"
-export AWS_SECRET_ACCESS_KEY="DUMMYSECRETACCESSKEY"
-```
-
 #### Without TLS
 
 To test the library with a local server *without* tls, run the following:
@@ -172,24 +165,38 @@ To test the library with a local server *without* tls, run the following:
 ```bash
 sh start-server.sh
 cargo test --test integration
+# or with verbose output
+RUST_LOG=debug cargo test --test integration -- --nocapture
 sh stop-server.sh
 ```
 
-To run the examples:
+To run the examples with a local server *without* tls, use the following:
 
 ```bash
 sh start-server.sh
-RUST_LOG=debug cargo run --example simple_query # debug mode
 cargo run --example simple_query
+# or with verbose output
+RUST_LOG=debug cargo run --example simple_query
 sh stop-server.sh
 ```
-#### Without TLS
+#### With TLS
 
 To test the library with a local server *with* tls, run the following:
 
 ```bash
 sh start-secure-server.sh
+cargo test --test integration_mtls
+# or with verbose output
+RUST_LOG=debug cargo test --test integration_mtls -- --nocapture
+sh stop-server.sh
+```
+To run the examples with a local server *with* tls, use the following:
+
+```bash
+sh start-secure-server.sh
 cargo run --example simple_query_with_mtls
+# or with verbose output
+RUST_LOG=debug cargo run --example simple_query_with_mtls
 sh stop-server.sh
 ```
 

@@ -88,7 +88,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //
     print_heading("REGISTRY PULL examples");
     execute_query(&conn, "REGISTRY PULL homebrew");
-    execute_query(&conn, "REGISTRY PULL github");
 
     //
     // simple select with one row
@@ -129,7 +128,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print_heading("StackQL SELECT example");
     execute_query(
         &conn,
-        "SELECT id, name, description, stargazers_count FROM github.repos.repos WHERE org = 'stackql' AND name = 'stackql'",
+        "SELECT * FROM homebrew.formula.vw_info WHERE formula_name = 'stackql'",
     );
 
     Ok(())
